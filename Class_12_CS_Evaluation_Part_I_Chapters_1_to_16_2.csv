@@ -1,0 +1,157 @@
+Sno,Chapter_No,Question,Option A  ,Option B  ,Option C  ,Option D  ,Correct Option,Correct Answer
+1,1,The small sections of code that are used to perform a particular task is called,Subroutines,Files,Pseudo code,Modules,A,Subroutines
+2,1,Which of the following is a unit of code that is often defined within a greater code structure?,Subroutines,Function,Files,Modules,B,Function
+3,1,Which of the following is a distinct syntactic block?,Subroutines,Function,Definition,Modules,C,Definition
+4,1,The variables in a function definition are called as,Subroutines,Function,Definition,Parameters,D,Parameters
+5,1,The values which are passed to a function definition are called,Arguments,Subroutines,Function,Definition,A,Arguments
+6,1,Which of the following are mandatory to write the type annotations in the function definition?,{ },( ),[ ],< >,B,( )
+7,1,Which of the following defines what an object can do?,Operating System,Compiler,Interface,Interpreter,C,Interface
+8,1,Which of the following carries out the instructions defined in the interface?,Operating System,Compiler,Implementation,Interpreter,C,Implementation
+9,1,The functions which will give exact result when same arguments are passed are called,Impure functions,Partial Functions,Dynamic Functions,Pure functions,D,Pure functions
+10,1,The functions which cause side effects to the arguments passed are called,impure function,Partial Functions,Dynamic Functions,Pure functions,A,impure function
+11,2,Which of the following functions that build the abstract data type?,Constructors,Destructors,recursive,Nested,A,Constructors
+12,2,Which of the following functions that retrieve information from the data type?,Constructors,Selectors,recursive,Nested,B,Selectors
+13,2,The data structure which is a mutable ordered sequence of elements is called,Built in,List,Tuple,Derived data,B,List
+14,2,A sequence of immutable objects is called,Built in,List,Tuple,Derived data,C,Tuple
+15,2,The data type whose representation is known are called,Built in datatype,Derived datatype,Concrete datatype,Abstract datatype,C,Concrete datatype
+16,2,The data type whose representation is unknown are called,Built in datatype,Derived datatype,Concrete datatype,Abstract datatype,D,Abstract datatype
+17,2,Which of the following is a compound structure?,Pair,Triplet,single,quadrat,A,Pair
+18,2,Bundling two values together into one can be considered as,Pair,Triplet,single,quadrat,A,Pair
+19,2,Which of the following allow to name the various parts of a multi-item object?,Tuples,Lists,Classes,quadrats,C,Classes
+20,2,Which of the following is constructed by placing expressions within square brackets?,Tuples,Lists,Classes,quadrats,B,Lists
+21,3,Which of the following refers to the visibility of variables in one part of a program to another part of the same program.,Scope,Memory,Address,Accessibility,A,Scope
+22,3,The process of binding a variable name with an object is called,Scope,Mapping,late binding,early binding,D,early binding
+23,3,Which of the following is used in programming languages to map the variable and object?,::,:=,=,==,B,:=
+24,3,Containers for mapping names of variables to objects is called,Scope,Mapping,Binding,Namespaces,D,Namespaces
+25,3,Which scope refers to variables defined in current function?,Local Scope,Global scope,Module scope,Function Scope,A,Local Scope
+26,3,The process of subdividing a computer program into separate sub-programs is called,Procedural Programming,Modular programming,Event Driven Programming,Object oriented Programming,B,Modular programming
+27,3,Which of the following security technique that regulates who can use resources in a computing environment?,Password,Authentication,Access control,Certification,C,Access control
+28,3,Which of the following members of a class can be handled only from within the class?,Public members,Protected members,Secured members,Private members,D,Private members
+29,3,Which members are accessible from outside the class?,Public members,Protected members,Secured members,Private members,A,Public members
+30,3,The members that are accessible from within the class and are also available to its sub-classes is called,Public members,Protected members,Secured members,Private members,B,Protected members
+31,4,The word comes from the name of a Persian mathematician Abu Ja?far Mohammed ibn-i Musa al Khowarizmi is called?,Flowchart,Flow,Algorithm,Syntax,C,Algorithm
+32,4,From the following sorting algorithms which algorithm needs the minimum number of swaps?,Bubble sort,Insertion sort,Selection sort,All the above,C,Selection sort
+33,4,Two main measures for the efficiency of an algorithm are,Processor and memory,Complexity and capacity,Time and space,Data and space,C,Time and space
+34,4,The algorithm that yields expected output for a valid input in called as,Algorithmic solution,Algorithmic outcomes,Algorithmic problem,Algorithmic coding,A,Algorithmic solution
+35,4,Which of the following is used to describe the worst case of an algorithm?,Big A,Big S,Big W,Big O,D,Big O
+36,4,Big ê is the reverse of,Big O,Big ?,Big A,Big S,A,Big O
+37,4,Binary search is also called as,Linear search,Sequential search,Random search,Half-interval search,D,Half-interval search
+38,4,The é notation in asymptotic evaluation represents,Base case,Average case,Worst case,NULL case,B,Average case
+39,4,"If a problem can be broken into subproblems which are reused several times, the problem possesses which property?",Overlapping subproblems,Optimal substructure,Memoization,Greedy,A,Overlapping subproblems
+40,4,"In dynamic programming, the technique of storing the previously calculated values is called?",Saving value property,Storing value property,Memoization,Mapping,C,Memoization
+41,5,Who developed Python?,Ritche,Guido Van Rossum,Bill Gates,Sunder Pitchai,B,Guido Van Rossum
+42,5,The Python prompt indicates that Interpreter is ready to accept instruction.,>>>,<<<,#,<<,A,>>>
+43,5,Which of the following shortcut is used to create new Python Program?,Ctrl + C,Ctrl + F,Ctrl + B,Ctrl + N,D,Ctrl + N
+44,5,Which of the following character is used to give comments in Python Program?,#,&,@,$,A,#
+45,5,This symbol is used to print more than one item on a single line.,Semicolon(;),Dollor($),"comma(,)",Colon(:),C,"comma(,)"
+46,5,Which of the following is not a token?,Interpreter,Identifiers,Keyword,Operators,A,Interpreter
+47,5,Which of the following is not a Keyword in Python?,break,while,continue,operators,D,operators
+48,5,Which operator is also called as Comparative operator?,Arithmetic,Relational,Logical,Assignment,B,Relational
+49,5,Which of the following is not Logical operator?,and,or,not,Assignment,D,Assignment
+50,5,Which operator is also called as Conditional operator?,Ternary,Relational,Logical,Assignment,A,Ternary
+51,6,How many important control structures are there in Python?,3,4,5,6,A,3
+52,6,elif can be considered to be abbreviation of,nested if,if..else,else if,if..elif,C,else if
+53,6,What plays a vital role in Python programming?,Statements,Control,Structure,Indentation,D,Indentation
+54,6,Which statement is generally used as a placeholder?,continue,break,pass,goto,C,pass
+55,6,The condition in the if statement should be in the form of,Arithmetic or Relational expression,Arithmetic or Logical expression,Relational or Logical expression,Arithmetic,C,Relational or Logical expression
+56,6,Which of the following is known as definite loop?,do..while,while,for,if..elif,C,for
+57,6,"What is the output of the following snippet? i=1; while True: if i%3 ==0: break; print(i,end=' '); i +=1",12,123,1234,124,B,123
+58,6,What is the output of the following snippet? T=1; while T: print(True); break,FALSE,TRUE,0,1,B,TRUE
+59,6,Which amongst this is not a jump statement?,for,pass,continue,break,A,for
+60,6,Which punctuation should be used in the blank? if <condition>_ statements-block 1 else:,;, :,::,!,B, :
+61,7,A named blocks of code that are designed to do one specific job is called as,Loop,Branching,Function,Block,C,Function
+62,7,A Function which calls itself is called as,Built-in,Recursion,Lambda,return,B,Recursion
+63,7,Which function is called anonymous un-named function,Lambda,Recursion,Function,define,A,Lambda
+64,7,Which of the following keyword is used to begin the function block?,define,for,finally,def,D,def
+65,7,Which of the following keyword is used to exit a function block?,define,return,finally,def,B,return
+66,7,While defining a function which of the following symbol is used.,; (semicolon),. (dot),: (colon),$ (dollar),C,: (colon)
+67,7,In which arguments the correct positional order is passed to a function?,Required,Keyword,Default,Variable-length,A,Required
+68,7,"Read the following statement and choose the correct statement(s). (I) In Python, you don?t have to mention the specific data types while defining function. (II) Python keywords can be used as function name.",I is correct and II is wrong,Both are correct,I is wrong and II is correct,Both are wrong,A,I is correct and II is wrong
+69,7,"Pick the correct one to execute the given statement successfully: if ____ : print(x, "" is a leap year"")",x%2=0,x%4==0,x/4=0,x%4=0,B,x%4==0
+70,7,Which of the following keyword is used to define the function testpython(): ?,define,pass,def,while,C,def
+71,8,"Which of the following is the output of the following python code? str1=""TamilNadu""; print(str1[::-1])",Tamilnadu,Tmlau,udanlimaT,udaNlimaT,C,udanlimaT
+72,8,"What will be the output of the following code? str1 = ""Chennai Schools""; str1[7] = ""-""",Chennai-Schools,Chenna-School,Type error,Chennai,C,Type error
+73,8,Which of the following operator is used for concatenation?,+,&,*,=,A,+
+74,8,Defining strings within triple quotes allows creating:,Single line Strings,Multiline Strings,Double line Strings,Multiple Strings,B,Multiline Strings
+75,8,Strings in python:,Changeable,Mutable,Immutable,flexible,C,Immutable
+76,8,Which of the following is the slicing operator?,{ },[ ],< >,( ),B,[ ]
+77,8,What is stride?,index value of slide operation,first argument of slice operation,second argument of slice operation,third argument of slice operation,D,third argument of slice operation
+78,8,Which of the following formatting character is used to print exponential notation in upper case?,%f,%E,%g,%n,B,%E
+79,8,Which of the following is used as placeholders or replacement fields which get replaced along with format( ) function?,{ },< >,++,^^,A,{ }
+80,8,The subscript of a string may be:,Positive,Negative,Both (a) and (b),Either (a) or (b),C,Both (a) and (b)
+81,9,Pick odd one in connection with collection data type,List,Tuple,Dictionary,Loop,D,Loop
+82,9,"Let list1=[2,4,6,8,10], then print(List1[-2]) will result in",10,8,4,6,B,8
+83,9,Which of the following function is used to count the number of elements in a list?,count(),find(),len(),index(),C,len()
+84,9,"If List=[10,20,30,40,50] then List[2]=35 will result","[35,10,20,30,40,50]","[10,20,30,40,50,35]","[10,20,35,40,50]","[10,35,30,40,50]",C,"[10,20,35,40,50]"
+85,9,"If List=[17,23,41,10] then List.append(32) will result","[32,17,23,41,10]","[17,23,41,10,32]","[10,17,23,32,41]","[41,32,23,17,10]",B,"[17,23,41,10,32]"
+86,9,Which of the following Python function can be used to add more than one element within an existing list?,append(),append_more(),extend(),more(),C,extend()
+87,9,What will be the result of the following Python code? S=[x**2 for x in range(5)]; print(S),"[0,1,2,4,5]","[0,1,4,9,16]","[0,1,4,9,16,25]","[1,4,9,16,25]",B,"[0,1,4,9,16]"
+88,9,What is the use of type() function in python?,To create a Tuple,To know the type of an element in tuple.,To know the data type of python object.,To create a list.,C,To know the data type of python object.
+89,9,Which of the following statement is not correct?,A list is mutable,A tuple is immutable.,The append() function is used to add an element.,The extend() function is used in tuple to add elements in a list.,D,The extend() function is used in tuple to add elements in a list.
+90,9,"Let setA = {3,6,9}, setB = {1,3,9}. What will be the result of the following snippet? print(setA|setB)","{3,6,9,1,3,9}","{3,9}",{1},"{1,3,6,9}",D,"{1,3,6,9}"
+91,9,Which of the following set operation includes all the elements that are in two sets but not the one that are common to two sets?,Symmetric difference,Difference,Intersection,Union,A,Symmetric difference
+92,9,"The keys in Python, dictionary is specified by",=,;,+, :,D, :
+93,10,Which of the following are the key features of an Object Oriented Programming language?,Constructor and Classes,Constructor and Object,Classes and Objects,Constructor and Destructor,C,Classes and Objects
+94,10,Functions defined inside a class:,Functions,Module,Methods,section,C,Methods
+95,10,Class members are accessed through which operator?,&,.,#,%,B,.
+96,10,Which of the following method is automatically executed when an object is created?,__object__( ),__del__( ),__func__( ),__init__( ),D,__init__( )
+97,10,A private class variable is prefixed with,__,&&,##,**,A,__
+98,10,Which of the following method is used as destructor?,__init__( ),__dest__( ),__rem__( ),__del__( ),D,__del__( )
+99,10,Which of the following class declaration is correct?,class class_name,class class_name<>,class class_name:,class class_name[ ],C,class class_name:
+100,10,"Which of the following is the output of the following program? class Student: def __init__(self, name): self.name=name; print(self.name); S=Student(""Tamil"")",Error,Tamil,name,self,B,Tamil
+101,10,Which of the following is the private class variable?,__num,##num,$$num,&&num,A,__num
+102,10,The process of creating an object is called as:,Constructor,Destructor,Initialize,Instantiation,D,Instantiation
+103,11,What is the acronym of DBMS?,DataBase Management Symbol,Database Managing System,DataBase Management System,DataBasic Management System,C,DataBase Management System
+104,11,A table is known as,tuple,attribute,relation,entity,C,relation
+105,11,Which database model represents parent-child relationship?,Relational,Network,Hierarchical,Object,C,Hierarchical
+106,11,Relational database model was first proposed by,E F Codd,E E Codd,E F Cadd,E F Codder,A,E F Codd
+107,11,What type of relationship does hierarchical model represents?,one-to-one,one-to-many,many-to-one,many-to-many,B,one-to-many
+108,11,Who is called Father of Relational Database from the following?,Chris Date,Hugh Darween,Edgar Frank Codd,Edgar Frank Cadd,C,Edgar Frank Codd
+109,11,Which of the following is an RDBMS?,Dbase,Foxpro,Microsoft Access,Microsoft Excel,C,Microsoft Access
+110,11,What symbol is used for SELECT statement?,å,?,X,?,A,å
+111,11,A tuple is also known as,table,row,attribute,field,B,row
+112,11,Who developed ER model?,Chen,EF Codd,Chend,Chand,A,Chen
+113,12,"Which commands provide definitions for creating table structure, deleting relations, and modifying relation schemas.",DDL,DML,DCL,DQL,A,DDL
+114,12,Which command lets to change the structure of the table?,SELECT,ORDER BY,MODIFY,ALTER,D,ALTER
+115,12,The command to delete a table including the structure is,DROP,DELETE,DELETE ALL,ALTER TABLE,A,DROP
+116,12,Queries can be generated using,SELECT,ORDER BY,MODIFY,ALTER,A,SELECT
+117,12,The clause used to sort data in a database,SORT BY,ORDER BY,GROUP BY,SELECT,B,ORDER BY
+118,13,A CSV file is also known as a ?.,Flat File,3D File,String File,Random File,A,Flat File
+119,13,The expansion of CRLF is,Control Return and Line Feed,Carriage Return and Form Feed,Control Router and Line Feed,Carriage Return and Line Feed,D,Carriage Return and Line Feed
+120,13,Which of the following module is provided by Python to do several operations on the CSV files?,py,xls,csv,os,C,csv
+121,13,Which of the following mode is used when dealing with non-text files like image or exe files?,Text mode,Binary mode,xls mode,csv mode,B,Binary mode
+122,13,The command used to skip a row in a CSV file is,next(),skip(),omit(),bounce(),A,next()
+123,13,Which of the following is a string used to terminate lines produced by writer()method of csv module?,Line Terminator,Enter key,Form feed,Data Terminator,A,Line Terminator
+124,13,"What is the output of the following program? import csv; d=csv.reader(open('c:\PYPRG\ch13\city.csv')); next(d); for row in d: print(row), where city.csv contains chennai,mylapore and mumbai,andheri","chennai,mylapore","mumbai,andheri",chennai,"chennai,mylapore; mumbai,andheri",B,"mumbai,andheri"
+125,13,Which of the following creates an object which maps data to a dictionary?,listreader(),reader(),tuplereader(),DictReader (),D,DictReader ()
+126,13,Making some changes in the data of the existing file or adding more data is called,Editing,Appending,Modification,Alteration,C,Modification
+127,13,What will be written inside the file test.csv using the given csv.writerows(D) program?,Exam Quarterly Halfyearly,Exam Quarterly Halfyearly,E; Q; H,"Exam, Quarterly, Halfyearly",D,"Exam, Quarterly, Halfyearly"
+128,14,Which of the following is not a scripting language?,JavaScript,PHP,Perl,HTML,D,HTML
+129,14,Importing C++ program in a Python program is called,wrapping,Downloading,Interconnecting,Parsing,A,wrapping
+130,14,The expansion of API is,Application Programming Interpreter,Application Programming Interface,Application Performing Interface,Application Programming Interlink,B,Application Programming Interface
+131,14,A framework for interfacing Python and C++ is,Ctypes,SWIG,Cython,Boost,B,SWIG
+132,14,Which of the following is a software design technique to split your code into separate parts?,Object oriented Programming,Modular programming,Low Level Programming,Procedure oriented Programming,B,Modular programming
+133,14,The module which allows you to interface with the Windows operating system is,OS module,sys module,csv module,getopt module,A,OS module
+134,14,getopt() will return an empty array if there is no error in splitting strings to,argv variable,opt variable,args variable,ifile variable,B,opt variable
+135,14,Identify the function call statement in the following snippet: if __name__ =='__main__': main(sys.argv[1:]),main(sys.argv[1:]),__name__,__main__,argv,A,main(sys.argv[1:])
+136,14,"Which of the following can be used for processing text, numbers, images, and scientific data?",HTML,C,C++,PYTHON,D,PYTHON
+137,14,What does __name__ contains?,c++ filename,main() name,python filename,os module name,C,python filename
+138,15,Which of the following is an organized collection of data?,Database,DBMS,Information,Records,A,Database
+139,15,SQLite falls under which database system?,Flat file database system,Relational Database system,Hierarchical database system,Object oriented Database system,B,Relational Database system
+140,15,Which of the following is a control structure used to traverse and fetch the records of the database?,Pointer,Key,Cursor,Insertion point,C,Cursor
+141,15,Any changes made in the values of the record should be saved by the command,Save,Save As,Commit,Oblige,C,Commit
+142,15,Which of the following executes the SQL command to perform some action?,execute(),key(),cursor(),run(),A,execute()
+143,15,Which of the following function retrieves the average of a selected column of rows in a table?,Add(),SUM(),AVG(),AVERAGE(),C,AVG()
+144,15,The function that returns the largest value of the selected column is,MAX(),LARGE(),HIGH(),MAXIMUM(),A,MAX()
+145,15,Which of the following is called the master table?,sqlite_master,sql_master,main_master,master_main,A,sqlite_master
+146,15,The most commonly used statement in SQL is,cursor,select,execute,commit,B,select
+147,15,Which of the following keyword avoid the duplicate?,Distinct,Remove,Where,GroupBy,A,Distinct
+148,16,Which is a python package used for 2D charts?,matplotlib.pyplot,matplotlib.pip,matplotlib.numpy,matplotlib.plt,A,matplotlib.pyplot
+149,16,"Identify the package manager for installing Python packages, or modules.",Matplotlib,PIP,plt.show(),python package,B,PIP
+150,16,Which of the following feature is used to represent data and information graphically?,Data List,Data Tuple,Classes and Objects,Data Visualization,D,Data Visualization
+151,16,.......... is a collection of resources assembled to create a single unified visual display.,Interface,Dashboard,Objects,Graphics,B,Dashboard
+152,16,Which of the following module should be imported to visualize data and information in Python?,csv,getopt,mysql,matplotlib,D,matplotlib
+153,16,............ is a type of chart which displays information as a series of data points connected by straight line segments.,csv,Pie chart,Bar chart,All the above,D,All the above
+154,16,"Read the code import matplotlib.pyplot as plt; plt.plot(3,2); plt.show(). Identify the output for the above coding.",Option a chart shown in the textbook,Option b chart shown in the textbook,Option c chart shown in the textbook,Option d chart shown in the textbook,C,Option c chart shown in the textbook
+155,16,Identify the right type of chart using the hints: often used to visualize a trend in data over intervals of time; line drawn chronologically.,Line chart,Bar chart,Pie chart,Scatter plot,A,Line chart
+156,16,"For pie chart: Statement A: To make a pie chart with Matplotlib, we can use plt.pie(). Statement B: The autopct parameter allows us to display the percentage value using Python string formatting.",Statement A is correct,Statement B is correct,Both the statements are correct,Both the statements are wrong,C,Both the statements are correct
