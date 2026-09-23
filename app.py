@@ -1,21 +1,34 @@
 import streamlit as st
 import pandas as pd
 from datetime import date
-import urllib.parse
+import gspread
+from google.oauth2.service_account import Credentials
+import json
 
 # ==========================================
 # CONFIGURATION
 # ==========================================
 TEST_DATE = date.today()
-WHATSAPP_NUMBER = "918015220441" # Replace with actual number
-
-# ⚠️ IMPORTANT: Keep your absolute path here if that is what fixed it!
 CSV_FILENAME = "Class_12_CS_Evaluation_Part_I_Chapters_1_to_16_2.csv"
-
-# 2) For testing, set to 5. Change this back to 100 for deployment.
 NUMBER_OF_QUESTIONS = 5 
 # ==========================================
 
+# 1. Connect to Google Sheets
+@st.cache_resource
+def connect_to_gsheets():
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    # Loads credentials from the .streamlit/secrets.toml file
+    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scopes)
+    client = gspread.authorize(creds)
+    # Open the Google Sheet by its exact name
+    return client.open("Student_Results").sheet1
+
+sheet = connect_to_gsheets()
+
+# Enforce date
 if date.today() != TEST_DATE:
     st.error(f"🛑 This test is locked. It is only accessible on {TEST_DATE.strftime('%d %B %Y')}.")
     st.stop()
@@ -31,71 +44,115 @@ def load_and_randomize_questions():
         sample_size = min(NUMBER_OF_QUESTIONS, len(df))
         randomized_df = df.sample(n=sample_size).reset_index(drop=True)
         return randomized_df
-        
     except FileNotFoundError:
-        st.error(f"File '{CSV_FILENAME}' not found. Please check the file path.")
+        st.error(f"File '{CSV_FILENAME}' not found.")
         st.stop()
 
-# Initialize session states
+# Initialize basic session state
 if 'questions_data' not in st.session_state:
     st.session_state.questions_data = load_and_randomize_questions()
-    st.session_state.user_answers = {}
-    st.session_state.test_submitted = False
     st.session_state.student_info_submitted = False
+    st.session_state.test_submitted = False
+    st.session_state.user_answers = {}
+    st.session_state.row_index = None
 
 df = st.session_state.questions_data
 
-# 3) Updated Headings
 st.title("🏫 Mt. St. Joseph Mat. Hr. Sec. School")
 st.subheader("Quarterly Holiday - Online Test")
 st.divider()
 
-# 1) Get Student Name and Section before starting
+# Login / Resume Screen
 if not st.session_state.student_info_submitted:
     st.markdown("### Please enter your details to begin")
     
     student_name = st.text_input("Student's Name")
     student_section = st.selectbox("Section", options=["Select Section", "A", "B", "C", "D", "E"])
     
-    if st.button("Start Test", type="primary"):
+    if st.button("Start / Resume Test", type="primary"):
         if student_name.strip() == "" or student_section == "Select Section":
-            st.warning("⚠️ Please enter your Name and select a Section to continue.")
+            st.warning("⚠️ Please enter your Name and select a Section.")
         else:
             st.session_state.student_name = student_name.strip()
             st.session_state.student_section = student_section
+            
+            # --- Check Google Sheet for Existing Student ---
+            records = sheet.get_all_records()
+            existing_row = None
+            
+            for i, record in enumerate(records):
+                if record.get('Name') == st.session_state.student_name and record.get('Section') == st.session_state.student_section:
+                    existing_row = i + 2 # +2 because row 1 is headers and zero-indexed
+                    if record.get('Status') == 'Completed':
+                        st.error("You have already completed and submitted this test.")
+                        st.stop()
+                    else:
+                        # Load previously saved answers to resume
+                        saved_answers = record.get('Saved_Answers')
+                        if saved_answers:
+                            # Convert JSON string back to dictionary integers
+                            loaded_dict = json.loads(saved_answers)
+                            st.session_state.user_answers = {int(k): v for k, v in loaded_dict.items()}
+                    break
+            
+            # If student is new, create a new row in Google Sheets
+            if not existing_row:
+                new_row = [st.session_state.student_name, st.session_state.student_section, "In Progress", "", str(date.today())]
+                # Assuming Sheet Headers: Name | Section | Status | Saved_Answers | Date | Score
+                if len(records) == 0:
+                    sheet.append_row(["Name", "Section", "Status", "Saved_Answers", "Date", "Score"])
+                sheet.append_row(new_row)
+                st.session_state.row_index = len(records) + 2
+            else:
+                st.session_state.row_index = existing_row
+                
             st.session_state.student_info_submitted = True
             st.rerun()
 
-# Display the test only if student info is submitted and test is not yet submitted
+# Test Screen
 elif st.session_state.student_info_submitted and not st.session_state.test_submitted:
     
     st.write(f"👤 **Student:** {st.session_state.student_name} | **Section:** {st.session_state.student_section}")
-    st.write("Please answer all questions before submitting.")
-    st.write("")
+    st.write("Ensure you click 'Save Progress' if your connection is unstable.")
     
     for index, row in df.iterrows():
         st.markdown(f"**Q{index + 1}. {row['Question']}** *(Chapter: {row.get('Chapter', 'N/A')})*")
-        
         options = [str(row['Option A']), str(row['Option B']), str(row['Option C']), str(row['Option D'])]
+        
+        # Pre-select answer if they are resuming
+        pre_selected = st.session_state.user_answers.get(index)
+        default_index = options.index(pre_selected) if pre_selected in options else None
         
         selected = st.radio(
             label="Select your answer",
             options=options,
             key=f"q_{index}",
-            index=None,
+            index=default_index,
             label_visibility="collapsed"
         )
-        st.session_state.user_answers[index] = selected
+        if selected is not None:
+             st.session_state.user_answers[index] = selected
         st.write("") 
 
-    if st.button("Submit Test", type="primary"):
-        if None in st.session_state.user_answers.values() or len(st.session_state.user_answers) < len(df):
-            st.warning("⚠️ Please answer all questions before submitting.")
-        else:
-            st.session_state.test_submitted = True
-            st.rerun()
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Button to save current state to Google Sheets mid-test
+        if st.button("💾 Save Progress"):
+            answers_json = json.dumps(st.session_state.user_answers)
+            # Update the 'Saved_Answers' column (assuming it is column D / 4)
+            sheet.update_cell(st.session_state.row_index, 4, answers_json)
+            st.toast("Progress saved to cloud!")
+            
+    with col2:
+        if st.button("📤 Submit Final Test", type="primary"):
+            if len(st.session_state.user_answers) < len(df):
+                st.warning("⚠️ Please answer all questions before submitting.")
+            else:
+                st.session_state.test_submitted = True
+                st.rerun()
 
-# Evaluate and display results
+# Final Evaluation Screen
 elif st.session_state.test_submitted:
     score = 0
     for index, row in df.iterrows():
@@ -105,31 +162,10 @@ elif st.session_state.test_submitted:
 
     total_questions = len(df)
     
+    # Update Google Sheet with final score and lock the status
+    sheet.update_cell(st.session_state.row_index, 3, "Completed") # Update Status
+    sheet.update_cell(st.session_state.row_index, 6, f"{score}/{total_questions}") # Update Score
+    
     st.success("✅ Test Submitted Successfully!")
-    st.write(f"👤 **Student:** {st.session_state.student_name} | **Section:** {st.session_state.student_section}")
+    st.write("Your results have been securely recorded in the teacher's database. You may now close this window.")
     st.metric(label="Your Final Score", value=f"{score} / {total_questions}")
-    
-    # WhatsApp Report updated with student details
-    report_message = (
-        f"*Quarterly Holiday - Online Test*\n"
-        f"School: Mt. St. Joseph Mat. Hr. Sec. School\n"
-        f"Name: {st.session_state.student_name}\n"
-        f"Section: {st.session_state.student_section}\n"
-        f"Score: {score}/{total_questions}\n"
-        f"Date: {date.today().strftime('%d %b %Y')}"
-    )
-    
-    encoded_message = urllib.parse.quote(report_message)
-    whatsapp_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={encoded_message}"
-    
-    st.markdown("### Next Step:")
-    st.markdown(
-        f"""
-        <a href="{whatsapp_url}" target="_blank">
-            <button style="background-color:#25D366; color:white; padding:10px 20px; border:none; border-radius:5px; font-size:16px; font-weight:bold; cursor:pointer; width:100%;">
-                Send Report to Teacher via WhatsApp 📲
-            </button>
-        </a>
-        """,
-        unsafe_allow_html=True
-    )
