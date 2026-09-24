@@ -14,6 +14,38 @@ STUDENTS_CSV = "Student_Database.csv"
 NUMBER_OF_QUESTIONS = 5 
 # ==========================================
 
+# --- CUSTOM BRANDING & FOOTER ---
+hide_st_style = """
+    <style>
+    /* Hides the default Streamlit top-right menu and bottom footer */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Creates your custom sticky footer */
+    .custom-footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: white;
+        color: #555555;
+        text-align: center;
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        border-top: 1px solid #eaeaea;
+        z-index: 100;
+    }
+    </style>
+    
+    <div class="custom-footer">
+        Crafted by [Karthik / Department of Computer Science] | Mt. St. Joseph Mat. Hr. Sec. School
+    </div>
+"""
+st.markdown(hide_st_style, unsafe_allow_html=True)
+# ---------------------------------
+
 # 1. Connect to Google Sheets
 @st.cache_resource
 def connect_to_gsheets():
@@ -46,13 +78,13 @@ def load_and_randomize_questions():
         st.error(f"File '{QUESTIONS_CSV}' not found.")
         st.stop()
 
-# Load Student Database (Loaded as strings to preserve phone numbers)
+# Load Student Database
 @st.cache_data
 def load_student_database():
     try:
         return pd.read_csv(STUDENTS_CSV, dtype=str)
     except FileNotFoundError:
-        st.error(f"File '{STUDENTS_CSV}' not found. Please upload it to GitHub.")
+        st.error(f"File '{STUDENTS_CSV}' not found. Please ensure it is uploaded.")
         st.stop()
 
 # Initialize session state
@@ -90,7 +122,6 @@ if not st.session_state.student_info_submitted:
             if match.empty:
                 st.error("❌ Authentication Failed: Invalid Roll Number or Mobile Number. Please try again.")
             else:
-                # Extract the student's real name from the database
                 st.session_state.student_name = match.iloc[0]['Name_Student']
                 st.session_state.roll_no = roll_input.strip()
                 
@@ -99,7 +130,6 @@ if not st.session_state.student_info_submitted:
                 existing_row = None
                 
                 for i, record in enumerate(records):
-                    # Check by Roll Number instead of Section
                     if str(record.get('Roll_no')) == st.session_state.roll_no:
                         existing_row = i + 2 
                         if record.get('Status') == 'Completed':
@@ -131,6 +161,7 @@ elif st.session_state.student_info_submitted and not st.session_state.test_submi
     
     st.write(f"👤 **Student:** {st.session_state.student_name} | **Roll No:** {st.session_state.roll_no}")
     st.write("Ensure you click 'Save Progress' if your connection is unstable.")
+    st.write("")
     
     for index, row in df.iterrows():
         st.markdown(f"**Q{index + 1}. {row['Question']}** *(Chapter: {row.get('Chapter', 'N/A')})*")
@@ -150,6 +181,7 @@ elif st.session_state.student_info_submitted and not st.session_state.test_submi
              st.session_state.user_answers[index] = selected
         st.write("") 
 
+    st.divider()
     col1, col2 = st.columns(2)
     with col1:
         if st.button("💾 Save Progress"):
@@ -164,6 +196,8 @@ elif st.session_state.student_info_submitted and not st.session_state.test_submi
             else:
                 st.session_state.test_submitted = True
                 st.rerun()
+    st.write("") # Extra space so the custom footer doesn't cover the buttons
+    st.write("")
 
 # Final Evaluation Screen
 elif st.session_state.test_submitted:
