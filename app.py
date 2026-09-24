@@ -145,8 +145,6 @@ if not st.session_state.student_info_submitted:
                 # If new attempt, write to sheet
                 if not existing_row:
                     new_row = [st.session_state.student_name, st.session_state.roll_no, "In Progress", "", str(date.today()), ""]
-                    if len(records) == 0:
-                        sheet.append_row(["Name", "Roll_no", "Status", "Saved_Answers", "Date", "Score"])
                     sheet.append_row(new_row)
                     st.session_state.row_index = len(records) + 2
                 else:
