@@ -17,12 +17,9 @@ NUMBER_OF_QUESTIONS = 5
 # --- CUSTOM BRANDING & FOOTER ---
 hide_st_style = """
     <style>
-    /* Hides the default Streamlit top-right menu and bottom footer */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    
-    /* Creates your custom sticky footer */
     .custom-footer {
         position: fixed;
         left: 0;
@@ -38,7 +35,6 @@ hide_st_style = """
         z-index: 100;
     }
     </style>
-    
     <div class="custom-footer">
         Crafted by [Your Name / Department] | Mt. St. Joseph Mat. Hr. Sec. School
     </div>
@@ -63,7 +59,7 @@ if date.today() != TEST_DATE:
     st.error(f"🛑 This test is locked. It is only accessible on {TEST_DATE.strftime('%d %B %Y')}.")
     st.stop()
 
-# Load ALL Questions (Cached for speed)
+# Load ALL Questions
 @st.cache_data
 def load_all_questions():
     try:
@@ -82,25 +78,17 @@ def load_student_database():
     try:
         return pd.read_csv(STUDENTS_CSV, dtype=str)
     except FileNotFoundError:
-        st.error(f"File '{STUDENTS_CSV}' not found. Please ensure it is uploaded.")
+        st.error(f"File '{STUDENTS_CSV}' not found.")
         st.stop()
 
-# Initialize session state (Randomizes once PER STUDENT)
-if 'questions_data' not in st.session_state:
-    full_df = load_all_questions()
-    sample_size = min(NUMBER_OF_QUESTIONS, len(full_df))
-    
-    # Randomization happens here, unique to each student session
-    st.session_state.questions_data = full_df.sample(n=sample_size).reset_index(drop=True)
-    
-    st.session_state.student_db = load_student_database()
+# Basic Session State Initialization
+if 'student_info_submitted' not in st.session_state:
     st.session_state.student_info_submitted = False
     st.session_state.test_submitted = False
     st.session_state.user_answers = {}
     st.session_state.row_index = None
-
-df = st.session_state.questions_data
-students_df = st.session_state.student_db
+    st.session_state.assigned_indices = []
+    st.session_state.questions_data = None
 
 st.title("🏫 Mt. St. Joseph Mat. Hr. Sec. School")
 st.subheader("Quarterly Holiday - Online Test")
@@ -118,20 +106,22 @@ if not st.session_state.student_info_submitted:
         if roll_input.strip() == "" or mobile_input.strip() == "":
             st.warning("⚠️ Please fill in both fields.")
         else:
-            # Check if credentials match the CSV database
+            full_df = load_all_questions()
+            students_df = load_student_database()
+            
             match = students_df[(students_df['Roll_no'].str.strip() == roll_input.strip()) & 
                                 (students_df['Mobile_no'].str.strip() == mobile_input.strip())]
             
             if match.empty:
-                st.error("❌ Authentication Failed: Invalid Roll Number or Mobile Number. Please try again.")
+                st.error("❌ Authentication Failed: Invalid Roll Number or Mobile Number.")
             else:
                 st.session_state.student_name = match.iloc[0]['Name_Student']
                 st.session_state.roll_no = roll_input.strip()
                 
-                # --- Check Google Sheet for Existing Progress ---
                 records = sheet.get_all_records()
                 existing_row = None
                 
+                # Check for existing progress
                 for i, record in enumerate(records):
                     if str(record.get('Roll_no')) == st.session_state.roll_no:
                         existing_row = i + 2 
@@ -139,19 +129,34 @@ if not st.session_state.student_info_submitted:
                             st.error(f"Welcome {st.session_state.student_name}, but our records show you have already submitted this test.")
                             st.stop()
                         else:
-                            saved_answers = record.get('Saved_Answers')
-                            if saved_answers:
-                                loaded_dict = json.loads(saved_answers)
-                                st.session_state.user_answers = {int(k): v for k, v in loaded_dict.items()}
+                            saved_data_str = record.get('Saved_Answers')
+                            if saved_data_str:
+                                try:
+                                    # Load BOTH the assigned questions and the answers
+                                    saved_data = json.loads(saved_data_str)
+                                    if "assigned" in saved_data:
+                                        st.session_state.assigned_indices = saved_data["assigned"]
+                                        st.session_state.user_answers = {int(k): v for k, v in saved_data["answers"].items()}
+                                except json.JSONDecodeError:
+                                    pass
                         break
                 
-                # If new attempt, write to sheet without duplicating headers
+                # If completely new attempt
                 if not existing_row:
-                    new_row = [st.session_state.student_name, st.session_state.roll_no, "In Progress", "", str(date.today()), ""]
+                    # 1. Generate the random questions exactly ONCE
+                    st.session_state.assigned_indices = full_df.sample(n=min(NUMBER_OF_QUESTIONS, len(full_df))).index.tolist()
+                    
+                    # 2. Pack the question list into the save file immediately
+                    initial_save = {"assigned": st.session_state.assigned_indices, "answers": {}}
+                    new_row = [st.session_state.student_name, st.session_state.roll_no, "In Progress", json.dumps(initial_save), str(date.today()), ""]
+                    
                     sheet.append_row(new_row)
                     st.session_state.row_index = len(records) + 2
                 else:
                     st.session_state.row_index = existing_row
+                
+                # Build the dataframe using the explicitly assigned random questions
+                st.session_state.questions_data = full_df.loc[st.session_state.assigned_indices].reset_index(drop=True)
                     
                 st.success(f"✅ Welcome, {st.session_state.student_name}!")
                 st.session_state.student_info_submitted = True
@@ -159,6 +164,8 @@ if not st.session_state.student_info_submitted:
 
 # Test Screen
 elif st.session_state.student_info_submitted and not st.session_state.test_submitted:
+    
+    df = st.session_state.questions_data
     
     st.write(f"👤 **Student:** {st.session_state.student_name} | **Roll No:** {st.session_state.roll_no}")
     st.write("Ensure you click 'Save Progress' if your connection is unstable.")
@@ -186,8 +193,12 @@ elif st.session_state.student_info_submitted and not st.session_state.test_submi
     col1, col2 = st.columns(2)
     with col1:
         if st.button("💾 Save Progress"):
-            answers_json = json.dumps(st.session_state.user_answers)
-            sheet.update_cell(st.session_state.row_index, 4, answers_json)
+            # Save BOTH the assigned questions and the current answers to the cloud
+            save_data = {
+                "assigned": st.session_state.assigned_indices,
+                "answers": st.session_state.user_answers
+            }
+            sheet.update_cell(st.session_state.row_index, 4, json.dumps(save_data))
             st.toast("Progress saved to cloud!")
             
     with col2:
@@ -197,11 +208,12 @@ elif st.session_state.student_info_submitted and not st.session_state.test_submi
             else:
                 st.session_state.test_submitted = True
                 st.rerun()
-    st.write("") # Extra space so the custom footer doesn't cover the buttons
+    st.write("") 
     st.write("")
 
 # Final Evaluation Screen
 elif st.session_state.test_submitted:
+    df = st.session_state.questions_data
     score = 0
     for index, row in df.iterrows():
         user_ans = st.session_state.user_answers.get(index)
