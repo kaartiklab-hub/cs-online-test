@@ -224,7 +224,7 @@ elif st.session_state.student_info_submitted and not st.session_state.test_submi
 
     # --- SMART AUTOSAVE LOGIC ---
     current_answered = len(st.session_state.user_answers)
-    if current_answered > st.session_state.last_autosave and (current_answered % 5 == 0 or current_answered == len(df)):
+    if current_answered > st.session_state.last_autosave and (current_answered % 10 == 0 or current_answered == len(df)):
         save_data = {"assigned": st.session_state.assigned_indices, "answers": st.session_state.user_answers}
         sheet.update_cell(st.session_state.row_index, 4, json.dumps(save_data))
         st.session_state.last_autosave = current_answered
