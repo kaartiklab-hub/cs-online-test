@@ -36,7 +36,7 @@ hide_st_style = """
     }
     </style>
     <div class="custom-footer">
-        Crafted by [Your Name / Department] | Mt. St. Joseph Mat. Hr. Sec. School
+        Crafted by [Karthik / Computer Science] | Mt. St. Joseph Mat. Hr. Sec. School
     </div>
 """
 st.markdown(hide_st_style, unsafe_allow_html=True)
@@ -72,11 +72,15 @@ def load_all_questions():
         st.error(f"File '{QUESTIONS_CSV}' not found.")
         st.stop()
 
-# Load Student Database
+# Load Student Database (UPDATED: Prevents numeric vs alphanumeric errors)
 @st.cache_data
 def load_student_database():
     try:
-        return pd.read_csv(STUDENTS_CSV, dtype=str)
+        df = pd.read_csv(STUDENTS_CSV)
+        # Force exact string conversion, remove '.0' if pandas inferred a float, and strip spaces
+        df['Roll_no'] = df['Roll_no'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
+        df['Mobile_no'] = df['Mobile_no'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
+        return df
     except FileNotFoundError:
         st.error(f"File '{STUDENTS_CSV}' not found.")
         st.stop()
@@ -102,7 +106,6 @@ if not st.session_state.student_info_submitted:
     st.markdown("### 🔒 Student Authentication")
     st.write("Please enter your registered credentials to access the exam.")
     
-    # 1) SECTION RESTRICTION ADDED HERE
     section_input = st.selectbox("Class Section", ["Select Section", "B1", "B2"])
     roll_input = st.text_input("Roll Number")
     mobile_input = st.text_input("Registered Mobile Number")
@@ -116,14 +119,16 @@ if not st.session_state.student_info_submitted:
             full_df = load_all_questions()
             students_df = load_student_database()
             
-            match = students_df[(students_df['Roll_no'].str.strip() == roll_input.strip()) & 
-                                (students_df['Mobile_no'].str.strip() == mobile_input.strip())]
+            # Check if credentials match (UPDATED: case-insensitive for Roll No)
+            match = students_df[(students_df['Roll_no'].str.upper() == roll_input.strip().upper()) & 
+                                (students_df['Mobile_no'] == mobile_input.strip())]
             
             if match.empty:
                 st.error("❌ Authentication Failed: Invalid Roll Number or Mobile Number.")
             else:
                 st.session_state.student_name = match.iloc[0]['Name_Student']
-                st.session_state.roll_no = roll_input.strip()
+                # Store uppercase version for consistency in the Google Sheet
+                st.session_state.roll_no = roll_input.strip().upper() 
                 st.session_state.section = section_input
                 
                 records = sheet.get_all_records()
@@ -131,7 +136,7 @@ if not st.session_state.student_info_submitted:
                 
                 # Check for existing progress
                 for i, record in enumerate(records):
-                    if str(record.get('Roll_no')) == st.session_state.roll_no:
+                    if str(record.get('Roll_no')).strip().upper() == st.session_state.roll_no:
                         existing_row = i + 2 
                         if record.get('Status') == 'Completed':
                             st.error(f"Welcome {st.session_state.student_name}, but our records show you have already submitted this test.")
@@ -154,7 +159,6 @@ if not st.session_state.student_info_submitted:
                     st.session_state.assigned_indices = full_df.sample(n=min(NUMBER_OF_QUESTIONS, len(full_df))).index.tolist()
                     initial_save = {"assigned": st.session_state.assigned_indices, "answers": {}}
                     
-                    # Section is recorded at the end of the sheet row
                     new_row = [st.session_state.student_name, st.session_state.roll_no, "In Progress", json.dumps(initial_save), str(date.today()), "", st.session_state.section]
                     sheet.append_row(new_row)
                     st.session_state.row_index = len(records) + 2
@@ -177,7 +181,6 @@ elif st.session_state.student_info_submitted and not st.session_state.test_submi
     st.write(f"👤 **Student:** {st.session_state.student_name} | **Roll No:** {st.session_state.roll_no} | **Section:** {st.session_state.section}")
     st.caption("✨ *Your progress automatically saves to the cloud every 5 questions.*")
     
-    # Logic for manual save and submit
     def trigger_manual_save():
         save_data = {"assigned": st.session_state.assigned_indices, "answers": st.session_state.user_answers}
         sheet.update_cell(st.session_state.row_index, 4, json.dumps(save_data))
@@ -254,11 +257,9 @@ elif st.session_state.test_submitted:
 
     total_questions = len(df)
     
-    # Finalize Google Sheet
     sheet.update_cell(st.session_state.row_index, 3, "Completed") 
     sheet.update_cell(st.session_state.row_index, 6, f"{score}/{total_questions}") 
     
-    # Generate Beautiful HTML Certificate
     certificate_html = f"""
     <div style="padding: 15px; border: 8px solid #2C3E50; border-radius: 10px; background-color: #ECF0F1; text-align: center; font-family: 'Georgia', serif; margin-bottom: 40px;">
         <div style="border: 2px solid #2C3E50; padding: 30px; background-color: #FFFFFF;">
