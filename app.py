@@ -40,7 +40,7 @@ hide_st_style = """
     </style>
     
     <div class="custom-footer">
-        Crafted by [Karthik / Department of Computer Science] | Mt. St. Joseph Mat. Hr. Sec. School
+        Crafted by [Your Name / Department] | Mt. St. Joseph Mat. Hr. Sec. School
     </div>
 """
 st.markdown(hide_st_style, unsafe_allow_html=True)
@@ -63,17 +63,15 @@ if date.today() != TEST_DATE:
     st.error(f"🛑 This test is locked. It is only accessible on {TEST_DATE.strftime('%d %B %Y')}.")
     st.stop()
 
-# Load Questions
+# Load ALL Questions (Cached for speed)
 @st.cache_data
-def load_and_randomize_questions():
+def load_all_questions():
     try:
         df = pd.read_csv(QUESTIONS_CSV, encoding="latin1")
         df.columns = df.columns.str.strip()
         if 'Chapter_No' in df.columns:
             df.rename(columns={'Chapter_No': 'Chapter'}, inplace=True)
-            
-        sample_size = min(NUMBER_OF_QUESTIONS, len(df))
-        return df.sample(n=sample_size).reset_index(drop=True)
+        return df
     except FileNotFoundError:
         st.error(f"File '{QUESTIONS_CSV}' not found.")
         st.stop()
@@ -87,9 +85,14 @@ def load_student_database():
         st.error(f"File '{STUDENTS_CSV}' not found. Please ensure it is uploaded.")
         st.stop()
 
-# Initialize session state
+# Initialize session state (Randomizes once PER STUDENT)
 if 'questions_data' not in st.session_state:
-    st.session_state.questions_data = load_and_randomize_questions()
+    full_df = load_all_questions()
+    sample_size = min(NUMBER_OF_QUESTIONS, len(full_df))
+    
+    # Randomization happens here, unique to each student session
+    st.session_state.questions_data = full_df.sample(n=sample_size).reset_index(drop=True)
+    
     st.session_state.student_db = load_student_database()
     st.session_state.student_info_submitted = False
     st.session_state.test_submitted = False
@@ -142,7 +145,7 @@ if not st.session_state.student_info_submitted:
                                 st.session_state.user_answers = {int(k): v for k, v in loaded_dict.items()}
                         break
                 
-                # If new attempt, write to sheet
+                # If new attempt, write to sheet without duplicating headers
                 if not existing_row:
                     new_row = [st.session_state.student_name, st.session_state.roll_no, "In Progress", "", str(date.today()), ""]
                     sheet.append_row(new_row)
