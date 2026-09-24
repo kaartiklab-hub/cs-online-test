@@ -11,7 +11,7 @@ import json
 TEST_DATE = date.today()
 QUESTIONS_CSV = "Class_12_CS_Evaluation_Part_I_Chapters_1_to_16_2.csv"
 STUDENTS_CSV = "Student_Database.csv"
-NUMBER_OF_QUESTIONS = 5 
+NUMBER_OF_QUESTIONS = 100 
 # ==========================================
 
 # --- CUSTOM BRANDING & FOOTER ---
@@ -89,22 +89,29 @@ if 'student_info_submitted' not in st.session_state:
     st.session_state.row_index = None
     st.session_state.assigned_indices = []
     st.session_state.questions_data = None
+    st.session_state.last_autosave = 0
 
 st.title("🏫 Mt. St. Joseph Mat. Hr. Sec. School")
 st.subheader("Quarterly Holiday - Online Test")
 st.divider()
 
+# ==========================================
 # Login / Authentication Screen
+# ==========================================
 if not st.session_state.student_info_submitted:
     st.markdown("### 🔒 Student Authentication")
     st.write("Please enter your registered credentials to access the exam.")
     
+    # 1) SECTION RESTRICTION ADDED HERE
+    section_input = st.selectbox("Class Section", ["Select Section", "B1", "B2"])
     roll_input = st.text_input("Roll Number")
     mobile_input = st.text_input("Registered Mobile Number")
     
     if st.button("Authenticate & Start Test", type="primary"):
-        if roll_input.strip() == "" or mobile_input.strip() == "":
-            st.warning("⚠️ Please fill in both fields.")
+        if section_input not in ["B1", "B2"]:
+            st.warning("⚠️ This test is restricted to Sections B1 and B2 only.")
+        elif roll_input.strip() == "" or mobile_input.strip() == "":
+            st.warning("⚠️ Please fill in all fields.")
         else:
             full_df = load_all_questions()
             students_df = load_student_database()
@@ -117,6 +124,7 @@ if not st.session_state.student_info_submitted:
             else:
                 st.session_state.student_name = match.iloc[0]['Name_Student']
                 st.session_state.roll_no = roll_input.strip()
+                st.session_state.section = section_input
                 
                 records = sheet.get_all_records()
                 existing_row = None
@@ -132,45 +140,67 @@ if not st.session_state.student_info_submitted:
                             saved_data_str = record.get('Saved_Answers')
                             if saved_data_str:
                                 try:
-                                    # Load BOTH the assigned questions and the answers
                                     saved_data = json.loads(saved_data_str)
                                     if "assigned" in saved_data:
                                         st.session_state.assigned_indices = saved_data["assigned"]
                                         st.session_state.user_answers = {int(k): v for k, v in saved_data["answers"].items()}
+                                        st.session_state.last_autosave = len(st.session_state.user_answers)
                                 except json.JSONDecodeError:
                                     pass
                         break
                 
-                # If completely new attempt
+                # If new attempt
                 if not existing_row:
-                    # 1. Generate the random questions exactly ONCE
                     st.session_state.assigned_indices = full_df.sample(n=min(NUMBER_OF_QUESTIONS, len(full_df))).index.tolist()
-                    
-                    # 2. Pack the question list into the save file immediately
                     initial_save = {"assigned": st.session_state.assigned_indices, "answers": {}}
-                    new_row = [st.session_state.student_name, st.session_state.roll_no, "In Progress", json.dumps(initial_save), str(date.today()), ""]
                     
+                    # Section is recorded at the end of the sheet row
+                    new_row = [st.session_state.student_name, st.session_state.roll_no, "In Progress", json.dumps(initial_save), str(date.today()), "", st.session_state.section]
                     sheet.append_row(new_row)
                     st.session_state.row_index = len(records) + 2
                 else:
                     st.session_state.row_index = existing_row
                 
-                # Build the dataframe using the explicitly assigned random questions
                 st.session_state.questions_data = full_df.loc[st.session_state.assigned_indices].reset_index(drop=True)
                     
                 st.success(f"✅ Welcome, {st.session_state.student_name}!")
                 st.session_state.student_info_submitted = True
                 st.rerun()
 
-# Test Screen
+# ==========================================
+# Test Screen (with Autosave & Top/Bottom Buttons)
+# ==========================================
 elif st.session_state.student_info_submitted and not st.session_state.test_submitted:
     
     df = st.session_state.questions_data
     
-    st.write(f"👤 **Student:** {st.session_state.student_name} | **Roll No:** {st.session_state.roll_no}")
-    st.write("Ensure you click 'Save Progress' if your connection is unstable.")
-    st.write("")
+    st.write(f"👤 **Student:** {st.session_state.student_name} | **Roll No:** {st.session_state.roll_no} | **Section:** {st.session_state.section}")
+    st.caption("✨ *Your progress automatically saves to the cloud every 5 questions.*")
     
+    # Logic for manual save and submit
+    def trigger_manual_save():
+        save_data = {"assigned": st.session_state.assigned_indices, "answers": st.session_state.user_answers}
+        sheet.update_cell(st.session_state.row_index, 4, json.dumps(save_data))
+        st.toast("💾 Progress manually saved to cloud!")
+
+    def trigger_submit():
+        if len(st.session_state.user_answers) < len(df):
+            st.warning("⚠️ Please answer all questions before submitting.")
+        else:
+            st.session_state.test_submitted = True
+
+    # --- TOP BUTTONS ---
+    col1, col2 = st.columns(2)
+    if col1.button("💾 Save Progress", key="save_top"):
+        trigger_manual_save()
+    if col2.button("📤 Submit Final Test", key="submit_top", type="primary"):
+        trigger_submit()
+        if st.session_state.test_submitted:
+            st.rerun()
+            
+    st.divider()
+    
+    # Display Questions
     for index, row in df.iterrows():
         st.markdown(f"**Q{index + 1}. {row['Question']}** *(Chapter: {row.get('Chapter', 'N/A')})*")
         options = [str(row['Option A']), str(row['Option B']), str(row['Option C']), str(row['Option D'])]
@@ -189,29 +219,31 @@ elif st.session_state.student_info_submitted and not st.session_state.test_submi
              st.session_state.user_answers[index] = selected
         st.write("") 
 
+    # --- SMART AUTOSAVE LOGIC ---
+    current_answered = len(st.session_state.user_answers)
+    if current_answered > st.session_state.last_autosave and (current_answered % 5 == 0 or current_answered == len(df)):
+        save_data = {"assigned": st.session_state.assigned_indices, "answers": st.session_state.user_answers}
+        sheet.update_cell(st.session_state.row_index, 4, json.dumps(save_data))
+        st.session_state.last_autosave = current_answered
+        st.toast(f"✅ Auto-saved at {current_answered} questions completed!")
+
     st.divider()
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("💾 Save Progress"):
-            # Save BOTH the assigned questions and the current answers to the cloud
-            save_data = {
-                "assigned": st.session_state.assigned_indices,
-                "answers": st.session_state.user_answers
-            }
-            sheet.update_cell(st.session_state.row_index, 4, json.dumps(save_data))
-            st.toast("Progress saved to cloud!")
+    
+    # --- BOTTOM BUTTONS ---
+    col3, col4 = st.columns(2)
+    if col3.button("💾 Save Progress", key="save_bottom"):
+        trigger_manual_save()
+    if col4.button("📤 Submit Final Test", key="submit_bottom", type="primary"):
+        trigger_submit()
+        if st.session_state.test_submitted:
+            st.rerun()
             
-    with col2:
-        if st.button("📤 Submit Final Test", type="primary"):
-            if len(st.session_state.user_answers) < len(df):
-                st.warning("⚠️ Please answer all questions before submitting.")
-            else:
-                st.session_state.test_submitted = True
-                st.rerun()
     st.write("") 
     st.write("")
 
-# Final Evaluation Screen
+# ==========================================
+# Final Certificate Screen
+# ==========================================
 elif st.session_state.test_submitted:
     df = st.session_state.questions_data
     score = 0
@@ -222,9 +254,28 @@ elif st.session_state.test_submitted:
 
     total_questions = len(df)
     
+    # Finalize Google Sheet
     sheet.update_cell(st.session_state.row_index, 3, "Completed") 
     sheet.update_cell(st.session_state.row_index, 6, f"{score}/{total_questions}") 
     
-    st.success("✅ Test Submitted Successfully!")
-    st.write("Your results have been securely recorded in the teacher's database. You may now close this window.")
-    st.metric(label="Your Final Score", value=f"{score} / {total_questions}")
+    # Generate Beautiful HTML Certificate
+    certificate_html = f"""
+    <div style="padding: 15px; border: 8px solid #2C3E50; border-radius: 10px; background-color: #ECF0F1; text-align: center; font-family: 'Georgia', serif; margin-bottom: 40px;">
+        <div style="border: 2px solid #2C3E50; padding: 30px; background-color: #FFFFFF;">
+            <h1 style="color: #2980B9; font-size: 32px; margin-bottom: 5px;">CERTIFICATE OF COMPLETION</h1>
+            <h3 style="color: #7F8C8D; margin-top: 0px; font-size: 18px;">Mt. St. Joseph Mat. Hr. Sec. School</h3>
+            <hr style="border: 1px solid #BDC3C7; width: 60%; margin: 20px auto;">
+            <p style="font-size: 16px; color: #34495E;">This is to proudly certify that</p>
+            <h2 style="color: #C0392B; font-size: 28px; text-decoration: underline; text-transform: uppercase;">{st.session_state.student_name}</h2>
+            <p style="font-size: 14px; color: #7F8C8D;">Roll No: {st.session_state.roll_no} | Section: {st.session_state.section}</p>
+            <p style="font-size: 16px; color: #34495E; margin-top: 25px;">has successfully completed the<br><b>Quarterly Holiday - Online Test (Computer Science)</b></p>
+            <h2 style="color: #27AE60; font-size: 32px; margin-top: 25px;">Final Score: {score} / {total_questions}</h2>
+            <p style="margin-top: 30px; font-style: italic; color: #95A5A6; font-size: 14px;">Awarded on: {date.today().strftime('%d %B %Y')}</p>
+        </div>
+    </div>
+    """
+    
+    st.balloons()
+    st.success("✅ Test Submitted Successfully! Your result has been securely recorded.")
+    st.markdown(certificate_html, unsafe_allow_html=True)
+    st.write("You may now take a screenshot of this certificate and close the window.")
